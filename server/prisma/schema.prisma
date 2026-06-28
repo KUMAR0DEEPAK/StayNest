@@ -1,0 +1,125 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// -----------------------------------------------------------------------------
+// ENUMS
+// -----------------------------------------------------------------------------
+
+enum Role {
+  STUDENT
+  OWNER
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+// -----------------------------------------------------------------------------
+// MODELS
+// -----------------------------------------------------------------------------
+
+model User {
+  id            String     @id @default(uuid())
+  full_name     String
+  email         String     @unique
+  password      String
+  phone         String?
+  role          Role       @default(STUDENT)
+  profile_image String?
+  created_at    DateTime   @default(now())
+  
+  properties    Property[]
+  bookings      Booking[]
+  reviews       Review[]
+  favorites     Favorite[]
+}
+
+model Property {
+  id              String            @id @default(uuid())
+  owner_id        String
+  owner           User              @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+  title           String
+  description     String
+  rent            Int
+  deposit         Int
+  address         String
+  city            String
+  latitude        Decimal?
+  longitude       Decimal?
+  room_type       String
+  available_rooms Int
+  created_at      DateTime          @default(now())
+  
+  images          Image[]
+  bookings        Booking[]
+  reviews         Review[]
+  favorites       Favorite[]
+  amenities       PropertyAmenity[]
+}
+
+model Amenity {
+  id         Int               @id @default(autoincrement())
+  name       String            @unique
+  properties PropertyAmenity[]
+}
+
+model PropertyAmenity {
+  property_id String
+  amenity_id  Int
+  property    Property @relation(fields: [property_id], references: [id], onDelete: Cascade)
+  amenity     Amenity  @relation(fields: [amenity_id], references: [id], onDelete: Cascade)
+
+  @@id([property_id, amenity_id])
+}
+
+model Image {
+  id          String   @id @default(uuid())
+  property_id String
+  property    Property @relation(fields: [property_id], references: [id], onDelete: Cascade)
+  image_url   String
+}
+
+model Booking {
+  id             String        @id @default(uuid())
+  property_id    String
+  property       Property      @relation(fields: [property_id], references: [id], onDelete: Cascade)
+  student_id     String
+  student        User          @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  move_in_date   DateTime
+  booking_status BookingStatus @default(PENDING)
+  created_at     DateTime      @default(now())
+}
+
+model Review {
+  id          String   @id @default(uuid())
+  property_id String
+  property    Property @relation(fields: [property_id], references: [id], onDelete: Cascade)
+  student_id  String
+  student     User     @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  rating      Int
+  review      String
+  created_at  DateTime @default(now())
+}
+
+model Favorite {
+  id          String   @id @default(uuid())
+  property_id String
+  property    Property @relation(fields: [property_id], references: [id], onDelete: Cascade)
+  student_id  String
+  student     User     @relation(fields: [student_id], references: [id], onDelete: Cascade)
+
+  @@unique([property_id, student_id])
+}

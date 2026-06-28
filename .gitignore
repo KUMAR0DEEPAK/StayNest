@@ -1,0 +1,12 @@
+# Node dependencies
+**/node_modules/
+
+# Local environment variables (DB URLs, API Keys)
+**/.env
+**/.env.local
+
+# Logs and system files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
