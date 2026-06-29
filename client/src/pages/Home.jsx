@@ -52,10 +52,12 @@ export default function Home() {
   return (
     <div className="space-y-12">
       
-      {/* 3D Hero Banner (Warm sand and coffee tones) */}
-      <section className="relative bg-gradient-to-br from-brand-light via-white to-brand-light rounded-3xl p-8 md:p-12 border border-brand-medium/20 border-b-8 border-r-4 border-b-brand-medium/50 border-r-brand-medium/30 shadow-[0_15px_30px_rgba(144,105,86,0.06)] text-brand-dark">
-        <div className="relative z-10 max-w-2xl space-y-6">
-          <span className="bg-brand-accent/20 text-brand-dark border border-brand-accent/30 px-3.5 py-1 rounded-full text-xs font-black tracking-widest uppercase shadow-sm">
+      {/* 3D Hero Banner (Warm sand and coffee tones with Cozy Room Image) */}
+      <section className="relative bg-gradient-to-br from-brand-light via-white to-brand-light rounded-3xl p-8 md:p-12 border border-brand-medium/20 border-b-8 border-r-4 border-b-brand-medium/50 border-r-brand-medium/30 shadow-[0_15px_30px_rgba(144,105,86,0.06)] text-brand-dark flex flex-col md:flex-row justify-between items-center gap-8">
+        
+        {/* Left Column: Text Info */}
+        <div className="relative z-10 flex-1 space-y-6">
+          <span className="bg-brand-accent/20 text-brand-dark border border-brand-accent/30 px-3.5 py-1 rounded-full text-xs font-black tracking-widest uppercase shadow-sm inline-block">
             🏠 Find Your Nest
           </span>
           <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight text-brand-dark">
@@ -65,6 +67,16 @@ export default function Home() {
             Explore verified listings near your college with high-speed WiFi, gym access, and student-focused community living.
           </p>
         </div>
+
+        {/* Right Column: 3D-framed Cozy Room Image */}
+        <div className="hidden md:block w-full max-w-sm rounded-2xl overflow-hidden border border-brand-medium/25 border-b-4 border-r border-b-brand-medium/40 border-r-brand-medium/20 shadow-md">
+          <img
+            src="https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=500&q=80"
+            alt="Cozy StayNest Room"
+            className="w-full h-56 object-cover"
+          />
+        </div>
+
       </section>
 
       {/* 3D Search Panel */}
@@ -183,7 +195,10 @@ export default function Home() {
                     <div className="flex justify-between items-center text-xs font-bold text-brand-medium/60 uppercase tracking-widest">
                       <span>📍 {property.city}</span>
                       <span className="flex items-center gap-0.5 text-amber-500">
-                        <FaStar /> 4.8
+                        <FaStar />{' '}
+                        {property.reviews && property.reviews.length > 0
+                          ? (property.reviews.reduce((sum, r) => sum + r.rating, 0) / property.reviews.length).toFixed(1)
+                          : 'New'}
                       </span>
                     </div>
                     <h3 className="text-lg font-black text-brand-dark group-hover:text-brand-accent transition-colors line-clamp-1">

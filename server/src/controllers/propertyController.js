@@ -138,7 +138,8 @@ export const getAllProperties = async (req, res) => {
             include: {
               amenity: true
             }
-          }
+          },
+          reviews: true
         }
       }),
       prisma.property.count({ where })
