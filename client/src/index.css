@@ -1,0 +1,16 @@
+@import "tailwindcss";
+@import "tailwindcss";
+
+@theme {
+  --color-brand-accent: #D4A383;
+  --color-brand-medium: #906956;
+  --color-brand-dark: #1B100C;
+  --color-brand-light: #FAF5F2;
+}
+
+/* Let's set a default page transition and body background */
+body {
+  background-color: var(--color-brand-light);
+  color: var(--color-brand-dark);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
