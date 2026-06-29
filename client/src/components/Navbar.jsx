@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
 import api from '../services/api.js';
 import { FaHome, FaSignOutAlt, FaUser, FaClipboardList, FaHeart } from 'react-icons/fa';
+import StayNestLogo from './StayNestLogo.jsx';
 
 export default function Navbar() {
   const { user, logout } = useContext(AuthContext);
@@ -58,8 +59,8 @@ export default function Navbar() {
       <nav className="max-w-7xl mx-auto pointer-events-auto backdrop-blur-lg bg-white/90 border border-brand-medium/20 border-b-4 border-r-2 border-b-brand-medium/55 border-r-brand-medium/30 rounded-2xl px-6 py-3.5 flex justify-between items-center shadow-[0_20px_35px_-15px_rgba(27,16,12,0.08)] hover:-translate-y-0.5 transition-all duration-300">
         
         {/* Logo (Warm Sand Accent) */}
-        <Link to="/" className="flex items-center gap-2 text-2xl font-extrabold text-brand-medium tracking-tight hover:scale-105 transition-transform duration-200">
-          <FaHome className="text-brand-accent drop-shadow-[0_2px_4px_rgba(212,163,131,0.3)]" />
+        <Link to="/" className="flex items-center gap-1.5 text-2xl font-black text-brand-medium tracking-tight hover:scale-[1.03] transition-transform duration-200">
+          <StayNestLogo size={36} />
           <span className="text-brand-dark">Stay<span className="text-brand-medium">Nest</span></span>
         </Link>
 

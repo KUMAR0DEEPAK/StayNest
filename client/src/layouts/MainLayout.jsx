@@ -1,6 +1,7 @@
 import { Outlet, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar.jsx';
 import { FaHome, FaHeart, FaClipboardList, FaEnvelope, FaPhone, FaMapMarkerAlt, FaTwitter, FaFacebookF, FaInstagram } from 'react-icons/fa';
+import StayNestLogo from '../components/StayNestLogo.jsx';
 
 export default function MainLayout() {
   return (
@@ -17,8 +18,8 @@ export default function MainLayout() {
           
           {/* Column 1: Brand Info */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center gap-2 text-2xl font-black text-brand-medium tracking-tight">
-              <FaHome className="text-brand-accent drop-shadow-[0_2px_4px_rgba(212,163,131,0.3)]" />
+            <Link to="/" className="flex items-center gap-1.5 text-2xl font-black text-brand-medium tracking-tight">
+              <StayNestLogo size={36} />
               <span className="text-brand-dark">Stay<span className="text-brand-medium">Nest</span></span>
             </Link>
             <p className="text-brand-medium text-xs leading-relaxed max-w-sm font-semibold">
