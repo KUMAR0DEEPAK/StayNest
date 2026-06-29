@@ -16,15 +16,23 @@ export const createProperty = async (req, res) => {
       available_rooms,
       latitude,
       longitude,
-      amenityIds // Array of amenity IDs, e.g., [1, 3, 5]
+      amenityIds, // Array of amenity IDs, e.g., [1, 3, 5]
+      imageUrls // Array of image URLs, e.g., ["url1", "url2"]
     } = req.body;
 
-    // 1. Basic validation
-    if (!title || !description || !rent || !deposit || !address || !city || !room_type || available_rooms === undefined) {
-      return res.status(400).json({ error: 'Please fill in all required fields.' });
-    }
+    // Fetch all current database amenities to resolve actual autoincrement IDs dynamically
+    const dbAmenities = await prisma.amenity.findMany({
+      orderBy: { id: 'asc' }
+    });
 
-    // 2. Create the property and connect amenities
+    const actualAmenityIds = amenityIds
+      ? amenityIds.map((frontendId) => {
+          const match = dbAmenities[Number(frontendId) - 1];
+          return match ? match.id : null;
+        }).filter(id => id !== null)
+      : [];
+
+    // 2. Create the property, connect amenities and create images
     const property = await prisma.property.create({
       data: {
         title,
@@ -38,12 +46,16 @@ export const createProperty = async (req, res) => {
         latitude: latitude ? Number(latitude) : null,
         longitude: longitude ? Number(longitude) : null,
         owner_id: req.user.id, // Set by the protect middleware
-        // Link multiple amenities via join table
+        // Link multiple amenities via join table using mapped database IDs
         amenities: {
-          create: amenityIds
-            ? amenityIds.map((id) => ({
-                amenity: { connect: { id: Number(id) } }
-              }))
+          create: actualAmenityIds.map((id) => ({
+            amenity: { connect: { id: Number(id) } }
+          }))
+        },
+        // Link multiple images
+        images: {
+          create: imageUrls
+            ? imageUrls.map((url) => ({ image_url: url }))
             : []
         }
       },
@@ -52,7 +64,8 @@ export const createProperty = async (req, res) => {
           include: {
             amenity: true
           }
-        }
+        },
+        images: true
       }
     });
 
@@ -238,6 +251,18 @@ export const updateProperty = async (req, res) => {
       return res.status(403).json({ error: 'You do not have permission to update this property.' });
     }
 
+    // Fetch all current database amenities to resolve actual autoincrement IDs dynamically
+    const dbAmenities = await prisma.amenity.findMany({
+      orderBy: { id: 'asc' }
+    });
+
+    const actualAmenityIds = amenityIds
+      ? amenityIds.map((frontendId) => {
+          const match = dbAmenities[Number(frontendId) - 1];
+          return match ? match.id : null;
+        }).filter(id => id !== null)
+      : [];
+
     // 3. Clear old amenities if new ones are passed
     if (amenityIds) {
       await prisma.propertyAmenity.deleteMany({
@@ -259,10 +284,10 @@ export const updateProperty = async (req, res) => {
         available_rooms: available_rooms !== undefined ? Number(available_rooms) : undefined,
         latitude: latitude ? Number(latitude) : undefined,
         longitude: longitude ? Number(longitude) : undefined,
-        // Re-create many-to-many relationship
+        // Re-create many-to-many relationship using resolved database IDs
         amenities: amenityIds
           ? {
-              create: amenityIds.map((id) => ({
+              create: actualAmenityIds.map((id) => ({
                 amenity: { connect: { id: Number(id) } }
               }))
             }

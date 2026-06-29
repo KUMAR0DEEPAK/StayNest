@@ -1,11 +1,52 @@
-import { useContext } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
+import api from '../services/api.js';
 import { FaHome, FaSignOutAlt, FaUser, FaClipboardList, FaHeart } from 'react-icons/fa';
 
 export default function Navbar() {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [bookings, setBookings] = useState([]);
+  const [hasNewReviews, setHasNewReviews] = useState(false);
+
+  // Fetch bookings and properties in real-time (polling every 8 seconds) to display live status badges
+  useEffect(() => {
+    if (!user) {
+      setBookings([]);
+      setHasNewReviews(false);
+      return;
+    }
+
+    const fetchData = async () => {
+      try {
+        // Fetch bookings
+        const bookingResponse = await api.get('/bookings');
+        if (bookingResponse.data?.status === 'success') {
+          setBookings(bookingResponse.data.data);
+        }
+
+        // Fetch owner properties to check for new reviews
+        if (user.role === 'OWNER') {
+          const propertiesResponse = await api.get('/properties');
+          if (propertiesResponse.data?.status === 'success') {
+            const myListings = propertiesResponse.data.data.filter((p) => p.owner_id === user.id);
+            const seenReviews = JSON.parse(localStorage.getItem('seenReviews') || '[]');
+            const hasUnseen = myListings.some(
+              (p) => p.reviews && p.reviews.some((r) => !seenReviews.includes(r.id))
+            );
+            setHasNewReviews(hasUnseen);
+          }
+        }
+      } catch (error) {
+        console.error('Navbar live data fetch error:', error);
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 8000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -28,8 +69,19 @@ export default function Navbar() {
             <>
               {user.role === 'STUDENT' && (
                 <>
-                  <Link to="/bookings" className="flex items-center gap-1.5 text-brand-medium hover:text-brand-accent font-bold transition hover:scale-105 duration-200">
+                  <Link to="/bookings" className="relative flex items-center gap-1.5 text-brand-medium hover:text-brand-accent font-bold transition hover:scale-105 duration-200">
                     <FaClipboardList /> My Bookings
+                    {/* Student sees a green dot if any booking status has changed to ACCEPTED or REJECTED and hasn't been seen yet */}
+                    {bookings.some(
+                      (b) =>
+                        (b.booking_status === 'ACCEPTED' || b.booking_status === 'REJECTED') &&
+                        !JSON.parse(localStorage.getItem('seenBookings') || '[]').includes(`${b.id}-${b.booking_status}`)
+                    ) && (
+                      <span
+                        className="w-2.5 h-2.5 rounded-full absolute -top-1 -right-2.5 border border-white bg-green-500"
+                        title="Booking Status Updated!"
+                      />
+                    )}
                   </Link>
                   <Link to="/favorites" className="flex items-center gap-1.5 text-brand-medium hover:text-brand-accent font-bold transition hover:scale-105 duration-200">
                     <FaHeart className="text-red-500 animate-pulse" /> Favorites
@@ -39,8 +91,14 @@ export default function Navbar() {
 
               {user.role === 'OWNER' && (
                 <>
-                  <Link to="/owner/properties" className="text-brand-medium hover:text-brand-accent font-bold transition hover:scale-105 duration-200">
+                  <Link to="/owner/properties" className="relative text-brand-medium hover:text-brand-accent font-bold transition hover:scale-105 duration-200">
                     My Properties
+                    {hasNewReviews && (
+                      <span
+                        className="w-2.5 h-2.5 rounded-full absolute -top-1 -right-2.5 border border-white bg-green-500"
+                        title="New Reviews!"
+                      />
+                    )}
                   </Link>
                   <Link to="/bookings" className="text-brand-medium hover:text-brand-accent font-bold transition hover:scale-105 duration-200">
                     Booking Requests

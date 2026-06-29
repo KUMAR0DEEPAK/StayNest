@@ -8,6 +8,7 @@ export default function Bookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [unseenBookingIds, setUnseenBookingIds] = useState([]);
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -26,6 +27,50 @@ export default function Bookings() {
   useEffect(() => {
     fetchBookings();
   }, [user]);
+
+  // Identify new unseen ACCEPTED/REJECTED bookings on mount, immediately mark them as seen in localStorage
+  // so that the Navbar green dot disappears instantly, but hold them in component state to show card dots for 5s
+  useEffect(() => {
+    if (user?.role !== 'STUDENT' || bookings.length === 0) return;
+
+    const seenBookings = JSON.parse(localStorage.getItem('seenBookings') || '[]');
+    const unseenIds = bookings
+      .filter(
+        (b) =>
+          (b.booking_status === 'ACCEPTED' || b.booking_status === 'REJECTED') &&
+          !seenBookings.includes(`${b.id}-${b.booking_status}`)
+      )
+      .map((b) => b.id);
+
+    if (unseenIds.length > 0) {
+      setUnseenBookingIds(unseenIds);
+
+      // Instantly mark them all as read in localStorage so the Navbar dot vanishes immediately
+      const newSeen = [...seenBookings];
+      bookings.forEach((b) => {
+        if (b.booking_status === 'ACCEPTED' || b.booking_status === 'REJECTED') {
+          const key = `${b.id}-${b.booking_status}`;
+          if (!newSeen.includes(key)) {
+            newSeen.push(key);
+          }
+        }
+      });
+      localStorage.setItem('seenBookings', JSON.stringify(newSeen));
+    }
+  }, [bookings, user]);
+
+  // Clear card highlights after 2 seconds
+  useEffect(() => {
+    if (unseenBookingIds.length === 0) return;
+    const timer = setTimeout(() => {
+      setUnseenBookingIds([]);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [unseenBookingIds]);
+
+  const isBookingUnseen = (b) => {
+    return unseenBookingIds.includes(b.id);
+  };
 
   // Update Booking Status Handler (Accept, Reject, Cancel)
   const handleStatusUpdate = async (bookingId, newStatus) => {
@@ -91,11 +136,18 @@ export default function Bookings() {
         <div className="space-y-6">
           {bookings.map((booking) => (
             
-            // 3D Booking Card
+            // 3D Booking Card (relative container for absolute badges)
             <div
               key={booking.id}
-              className="bg-white border border-brand-medium/20 border-b-6 border-r-2 border-b-brand-medium/40 border-r-brand-medium/25 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6 hover:shadow-[0_15px_30px_rgba(144,105,86,0.06)] transition-all duration-300"
+              className="relative bg-white border border-brand-medium/20 border-b-6 border-r-2 border-b-brand-medium/40 border-r-brand-medium/25 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6 hover:shadow-[0_15px_30px_rgba(144,105,86,0.06)] transition-all duration-300"
             >
+              {/* Pulsing Green dot for recently accepted/rejected requests (disappears after 5 seconds) */}
+              {isBookingUnseen(booking) && (
+                <span className="absolute top-4 right-4 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500 border border-white shadow-sm"></span>
+                </span>
+              )}
               {/* Left Section: Details */}
               <div className="space-y-4 flex-grow">
                 

@@ -26,11 +26,29 @@ export default function PropertyDetails() {
   const [reviewText, setReviewText] = useState('');
   const [reviewError, setReviewError] = useState('');
 
+  // Gallery State
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
   const fetchProperty = async () => {
     try {
       const response = await api.get(`/properties/${id}`);
       if (response.data?.status === 'success') {
-        setProperty(response.data.data);
+        const propData = response.data.data;
+        setProperty(propData);
+
+        // Mark all reviews of this property as "seen" by the owner
+        if (user && user.role === 'OWNER' && propData.owner_id === user.id) {
+          if (propData.reviews && propData.reviews.length > 0) {
+            const seenReviews = JSON.parse(localStorage.getItem('seenReviews') || '[]');
+            const newSeen = [...seenReviews];
+            propData.reviews.forEach((rev) => {
+              if (!newSeen.includes(rev.id)) {
+                newSeen.push(rev.id);
+              }
+            });
+            localStorage.setItem('seenReviews', JSON.stringify(newSeen));
+          }
+        }
       }
     } catch (error) {
       console.error('Error fetching property:', error);
@@ -172,13 +190,34 @@ export default function PropertyDetails() {
           </div>
         </div>
 
-        {/* 3D Image Frame */}
-        <div className="bg-white border border-brand-medium/20 border-b-8 border-r-4 border-b-brand-medium/40 border-r-brand-medium/25 rounded-3xl p-3 shadow-md overflow-hidden h-96">
-          <img
-            src={property.images?.[0]?.image_url || 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=1200&q=80'}
-            alt={property.title}
-            className="w-full h-full object-cover rounded-2xl"
-          />
+        {/* 3D Image Frame & Gallery Thumbnails */}
+        <div className="space-y-4">
+          <div className="bg-white border border-brand-medium/20 border-b-8 border-r-4 border-b-brand-medium/40 border-r-brand-medium/25 rounded-3xl p-3 shadow-md overflow-hidden h-96">
+            <img
+              src={property.images?.[activeImageIndex]?.image_url || 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=1200&q=80'}
+              alt={property.title}
+              className="w-full h-full object-cover rounded-2xl transition-all duration-300"
+            />
+          </div>
+
+          {/* Thumbnails Row */}
+          {property.images && property.images.length > 1 && (
+            <div className="flex gap-3 overflow-x-auto py-2">
+              {property.images.map((img, index) => (
+                <button
+                  key={img.id || index}
+                  onClick={() => setActiveImageIndex(index)}
+                  className={`w-24 h-16 rounded-xl overflow-hidden border-2 cursor-pointer transition-all flex-shrink-0 shadow-sm ${
+                    index === activeImageIndex
+                      ? 'border-brand-accent scale-105 shadow-md bg-brand-accent/10'
+                      : 'border-brand-medium/20 hover:border-brand-medium/55 bg-white'
+                  }`}
+                >
+                  <img src={img.image_url} className="w-full h-full object-cover" alt={`Preview ${index + 1}`} />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Description */}

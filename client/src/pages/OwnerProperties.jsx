@@ -1,5 +1,6 @@
 import { useEffect, useState, useContext } from 'react';
 import { useForm } from 'react-hook-form';
+import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
 import api from '../services/api.js';
 import { FaPlus, FaTrash, FaHome, FaMapMarkerAlt, FaBed, FaDollarSign } from 'react-icons/fa';
@@ -39,12 +40,13 @@ export default function OwnerProperties() {
   });
 
   const fetchMyProperties = async () => {
+    if (!user) return;
     setLoading(true);
     try {
       const response = await api.get('/properties');
       if (response.data?.status === 'success') {
         // Filter properties belonging to this owner on client-side
-        const myListings = response.data.data.filter(p => p.owner_id === user.id);
+        const myListings = response.data.data.filter(p => p.owner_id === user?.id);
         setProperties(myListings);
       }
     } catch (error) {
@@ -66,6 +68,11 @@ export default function OwnerProperties() {
       // Map selected amenity checkboxes (strings) to numbers
       const amenityIds = data.amenities ? data.amenities.map(id => Number(id)) : [];
 
+      // Parse comma-separated image URLs into an array of strings
+      const imageUrls = data.imageUrls
+        ? data.imageUrls.split(',').map(url => url.trim()).filter(url => url.length > 0)
+        : [];
+
       const response = await api.post('/properties', {
         title: data.title,
         description: data.description,
@@ -75,7 +82,8 @@ export default function OwnerProperties() {
         city: data.city,
         room_type: data.room_type,
         available_rooms: Number(data.available_rooms),
-        amenityIds
+        amenityIds,
+        imageUrls // Send array of image URLs to the backend
       });
 
       if (response.data?.status === 'success') {
@@ -100,6 +108,12 @@ export default function OwnerProperties() {
     } catch (error) {
       console.error('Error deleting property:', error);
     }
+  };
+
+  const isUnseen = (property) => {
+    if (!property.reviews || property.reviews.length === 0) return false;
+    const seenReviews = JSON.parse(localStorage.getItem('seenReviews') || '[]');
+    return property.reviews.some((r) => !seenReviews.includes(r.id));
   };
 
   if (loading) {
@@ -228,6 +242,18 @@ export default function OwnerProperties() {
               </div>
             </div>
 
+            {/* Property Image URLs */}
+            <div className="space-y-1">
+              <label className="text-xs font-black uppercase tracking-wider text-brand-medium/60">Property Image URLs (comma-separated)</label>
+              <input
+                type="text"
+                placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
+                className="w-full bg-brand-light/10 border border-brand-medium/20 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-brand-accent/20 shadow-inner"
+                {...register('imageUrls')}
+              />
+              <p className="text-[10px] text-brand-medium/55 font-semibold">Paste URLs of photos, separated by commas, to show a photo gallery to students.</p>
+            </div>
+
             {/* Amenities Checkboxes */}
             <div className="space-y-2">
               <label className="text-xs font-black uppercase tracking-wider text-brand-medium/60">Select Included Amenities:</label>
@@ -277,6 +303,14 @@ export default function OwnerProperties() {
                   alt={property.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
+
+                {/* Pulsing Green dot for unseen reviews */}
+                {isUnseen(property) && (
+                  <span className="absolute top-4 left-4 flex h-3.5 w-3.5 z-20">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-green-500 border-2 border-white shadow-sm"></span>
+                  </span>
+                )}
                 
                 {/* 3D Delete Button */}
                 <button
