@@ -1,14 +1,16 @@
 import jwt from 'jsonwebtoken';
 import prisma from '../config/db.js';
 
-// 1. Middleware to protect routes (checks if user is logged in)
+// Middleware to protect routes (checks if user is logged in)
 export const protect = async (req, res, next) => {
   try {
     let token;
 
-    // Check if JWT token is in the Authorization header
+    // Check if JWT token is in the Authorization header or the cookies
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies && req.cookies.token) {
+      token = req.cookies.token;
     }
 
     if (!token) {
@@ -50,10 +52,9 @@ export const protect = async (req, res, next) => {
   }
 };
 
-// 2. Middleware to restrict access based on role(s)
+// Middleware to restrict access based on role(s)
 export const authorize = (...roles) => {
   return (req, res, next) => {
-    // roles example: ['STUDENT', 'ADMIN']
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         error: `You do not have permission to perform this action. Allowed roles: ${roles.join(', ')}`,

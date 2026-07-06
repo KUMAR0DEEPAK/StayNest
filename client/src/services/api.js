@@ -3,9 +3,10 @@ import axios from 'axios';
 // Create pre-configured axios instance
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  withCredentials: true // Crucial: forces Axios to send HTTP-Only cookies with every request
 });
 
-// Request interceptor to automatically add the JWT token to headers
+// Request interceptor fallback (allows mobile/Postman testing with headers)
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');

@@ -7,12 +7,10 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 1. Restore session on page load
+  // 1. Restore session on page load (now uses just user object)
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-
-    if (storedUser && token) {
+    if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
     setLoading(false);
@@ -22,10 +20,9 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await api.post('/auth/login', { email, password });
-      const { token, user: userData } = response.data;
+      const { user: userData } = response.data;
 
-      // Save to localStorage
-      localStorage.setItem('token', token);
+      // Save user profile state to localStorage
       localStorage.setItem('user', JSON.stringify(userData));
 
       setUser(userData);
@@ -48,10 +45,9 @@ export const AuthProvider = ({ children }) => {
         phone,
         role
       });
-      const { token, user: userData } = response.data;
+      const { user: userData } = response.data;
 
-      // Save to localStorage
-      localStorage.setItem('token', token);
+      // Save user profile state to localStorage
       localStorage.setItem('user', JSON.stringify(userData));
 
       setUser(userData);
@@ -65,10 +61,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   // 4. Logout Handler
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout'); // Call backend to clear HTTP-Only cookie
+    } catch (error) {
+      console.error('Error logging out from server:', error);
+    } finally {
+      // Always clear client-side state
+      localStorage.removeItem('user');
+      localStorage.removeItem('token'); // Clears any legacy tokens
+      setUser(null);
+    }
   };
 
   const value = {

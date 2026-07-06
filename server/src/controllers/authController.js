@@ -2,13 +2,23 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../config/db.js";
 
-// Helper function to generate JWT (Accessible by both register & login)
+// Helper function to generate JWT
 const generateToken = (id) => {
     return jwt.sign(
         { id },
         process.env.JWT_SECRET,
         { expiresIn: process.env.JWT_EXPIRES_IN }
     );
+};
+
+// Helper function to set JWT HTTP-Only Cookie
+const setAuthCookie = (res, token) => {
+    res.cookie('token', token, {
+        httpOnly: true, // Prevents XSS script access
+        secure: process.env.NODE_ENV === 'production', // Forces HTTPS in production
+        sameSite: 'lax', // Protects against CSRF
+        maxAge: 24 * 60 * 60 * 1000 // Cookie expires in 24 hours
+    });
 };
 
 // User registration
@@ -25,7 +35,6 @@ export const register = async (req, res) => {
             return res.status(400).json({ error: "User already exists" });
         }
 
-        // Corrected typo here (bcrypt instead of bcrpty)
         const hashedPassword = await bcrypt.hash(password, 12);
 
         const user = await prisma.user.create({
@@ -34,15 +43,16 @@ export const register = async (req, res) => {
                 email,
                 password: hashedPassword,
                 phone,
-                role: role || 'STUDENT', // Standard role enum value
+                role: role || 'STUDENT',
             },
         });
 
         const token = generateToken(user.id);
+        setAuthCookie(res, token); // Set HTTP-Only cookie
+
         res.status(201).json({
             status: 'success',
             message: 'User registered successfully',
-            token,
             user: {
                 id: user.id,
                 full_name: user.full_name,
@@ -70,10 +80,11 @@ export const login = async (req, res) => {
         }
 
         const token = generateToken(user.id);
+        setAuthCookie(res, token); // Set HTTP-Only cookie
+
         res.status(200).json({
             status: 'success',
             message: 'User logged in successfully',
-            token,
             user: {
                 id: user.id,
                 full_name: user.full_name,
@@ -85,4 +96,17 @@ export const login = async (req, res) => {
         console.error('Login Error:', error);
         res.status(500).json({ error: 'Internal server error during login' });
     }
+};
+
+// User logout (clears cookie)
+export const logout = async (req, res) => {
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+    });
+    res.status(200).json({
+        status: 'success',
+        message: 'Logged out successfully'
+    });
 };
