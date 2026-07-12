@@ -68,9 +68,12 @@ export default function OwnerProperties() {
       // Map selected amenity checkboxes (strings) to numbers
       const amenityIds = data.amenities ? data.amenities.map(id => Number(id)) : [];
 
-      // Parse comma-separated image URLs into an array of strings
+      // Parse comma-separated image URLs into an array of strings (trimming and stripping quotes)
       const imageUrls = data.imageUrls
-        ? data.imageUrls.split(',').map(url => url.trim()).filter(url => url.length > 0)
+        ? data.imageUrls
+            .split(',')
+            .map((url) => url.trim().replace(/^["']|["']$/g, ''))
+            .filter((url) => url.length > 0)
         : [];
 
       const response = await api.post('/properties', {
@@ -174,19 +177,21 @@ export default function OwnerProperties() {
             {/* Rent & Deposit row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-xs font-black uppercase tracking-wider text-brand-medium/60">Rent ($/mo)</label>
+                <label className="text-xs font-black uppercase tracking-wider text-brand-medium/60">Rent (₹/mo)</label>
                 <input
                   type="number"
                   placeholder="500"
+                  onFocus={(e) => e.target.select()}
                   className={`w-full bg-brand-light/10 border ${errors.rent ? 'border-red-400' : 'border-brand-medium/20'} rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-4 focus:ring-brand-accent/20 shadow-inner`}
                   {...register('rent', { required: 'Rent is required', min: 1 })}
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-black uppercase tracking-wider text-brand-medium/60">Security Deposit ($)</label>
+                <label className="text-xs font-black uppercase tracking-wider text-brand-medium/60">Security Deposit (₹)</label>
                 <input
                   type="number"
                   placeholder="1000"
+                  onFocus={(e) => e.target.select()}
                   className={`w-full bg-brand-light/10 border ${errors.deposit ? 'border-red-400' : 'border-brand-medium/20'} rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-4 focus:ring-brand-accent/20 shadow-inner`}
                   {...register('deposit', { required: 'Deposit is required', min: 0 })}
                 />
@@ -236,6 +241,7 @@ export default function OwnerProperties() {
                 <input
                   type="number"
                   placeholder="1"
+                  onFocus={(e) => e.target.select()}
                   className="w-full bg-brand-light/10 border border-brand-medium/20 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-4 focus:ring-brand-accent/20 shadow-inner"
                   {...register('available_rooms', { required: 'Count is required', min: 1 })}
                 />
@@ -323,7 +329,7 @@ export default function OwnerProperties() {
 
                 {/* Price tag */}
                 <span className="absolute bottom-4 left-4 bg-brand-dark/95 text-white text-sm font-black px-3 py-1 rounded-lg shadow-md flex items-center border border-brand-medium/20">
-                  <span className="text-brand-accent text-xs font-bold mr-0.5">$</span>
+                  <span className="text-brand-accent text-xs font-bold mr-0.5">₹</span>
                   <span>{property.rent}</span>
                   <span className="text-[10px] text-gray-400 font-normal">/mo</span>
                 </span>

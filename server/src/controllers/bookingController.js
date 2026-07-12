@@ -16,6 +16,14 @@ export const createBooking = async (req, res) => {
       return res.status(400).json({ error: 'Please provide property ID and move-in date.' });
     }
 
+    const parsedMoveInDate = new Date(move_in_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (isNaN(parsedMoveInDate.getTime()) || parsedMoveInDate < today) {
+      return res.status(400).json({ error: 'Move-in date must be today or in the future.' });
+    }
+
     // 2. Check if property exists and has available rooms
     const property = await prisma.property.findUnique({ where: { id: property_id } });
     if (!property) {

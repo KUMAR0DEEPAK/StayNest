@@ -163,7 +163,12 @@ export default function Bookings() {
                   {/* Common Details */}
                   <div className="flex items-center gap-2">
                     <FaCalendarAlt className="text-brand-accent" />
-                    <span>Move-in Date: {new Date(booking.move_in_date).toLocaleDateString()}</span>
+                    <span>
+                      Move-in Date:{' '}
+                      {booking.move_in_date && !isNaN(new Date(booking.move_in_date).getTime())
+                        ? new Date(booking.move_in_date).toLocaleDateString()
+                        : 'N/A'}
+                    </span>
                   </div>
 
                   {/* Student View: Shows Owner Contact Info */}

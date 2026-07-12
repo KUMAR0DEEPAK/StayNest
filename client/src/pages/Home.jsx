@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
 import api from '../services/api.js';
 import { FaSearch, FaMapMarkerAlt, FaBed, FaDollarSign, FaSlidersH, FaStar } from 'react-icons/fa';
-import studentRoomVideo from '../assets/student room video.mp4';
+
 
 // 1. MINI CAROUSEL COMPONENT FOR PROPERTY CARDS
 function CardImageGallery({ images, title, roomType, rent }) {
@@ -72,7 +72,7 @@ function CardImageGallery({ images, title, roomType, rent }) {
       </span>
       
       <span className="absolute bottom-4 right-4 bg-brand-dark/95 text-white text-sm font-black px-3.5 py-1.5 rounded-lg shadow-md flex items-center border border-brand-medium/20 z-10">
-        <span className="text-brand-accent text-xs font-bold mr-0.5">$</span>
+        <span className="text-brand-accent text-xs font-bold mr-0.5">₹</span>
         <span>{rent}</span>
         <span className="text-[10px] text-gray-400 font-normal">/mo</span>
       </span>
@@ -87,18 +87,7 @@ export default function Home() {
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Reference for guest hero video autoplay bypass
-  const guestVideoRef = useRef(null);
 
-  // Force mute and play on DOM ref to bypass Chrome autoplay policy in React
-  useEffect(() => {
-    if (!user && guestVideoRef.current) {
-      guestVideoRef.current.muted = true;
-      guestVideoRef.current.play().catch((err) => {
-        console.log('Autoplay blocked:', err);
-      });
-    }
-  }, [user]);
 
   const [search, setSearch] = useState('');
   const [city, setCity] = useState('');
@@ -200,15 +189,12 @@ export default function Home() {
         {/* Guest Hero Section (Full-Color Cinematic Video Banner - Rounded Corners Fixed) */}
         <section className="relative rounded-3xl p-8 md:p-16 border border-brand-medium/20 border-b-8 border-r-4 border-b-brand-medium/50 border-r-brand-medium/30 shadow-[0_15px_30px_rgba(144,105,86,0.06)] text-center space-y-8 overflow-hidden isolate transform-gpu">
           
-          {/* Loop Video Background (Explicitly Rounded to fit frame) */}
-          <video
-            ref={guestVideoRef}
-            loop
-            playsInline
+          {/* Background Image (Explicitly Rounded to fit frame) */}
+          <img
+            src="https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=1600&q=80"
+            alt="Cozy StayNest Room"
             className="absolute inset-0 w-full h-full object-cover z-0 blur-[3px] rounded-[22px]"
-          >
-            <source src={studentRoomVideo} type="video/mp4" />
-          </video>
+          />
 
           <div className="max-w-3xl mx-auto space-y-6 relative z-10 text-white">
             <span className="bg-white/20 text-white border border-white/30 backdrop-blur-sm px-3.5 py-1 rounded-full text-xs font-black tracking-widest uppercase shadow-sm inline-block">
@@ -227,25 +213,6 @@ export default function Home() {
               <span className="bg-white/10 backdrop-blur-sm border border-white/20 px-3 py-1.5 rounded-xl shadow-sm">✓ 24/7 Assistance</span>
               <span className="bg-white/10 backdrop-blur-sm border border-white/20 px-3 py-1.5 rounded-xl shadow-sm">✓ Lowest Price Guarantee</span>
             </div>
-          </div>
-
-          {/* Large Clean Search Bar */}
-          <div className="max-w-2xl mx-auto relative z-10 pt-4">
-            <form onSubmit={(e) => { e.preventDefault(); navigate('/login'); }} className="flex bg-white border border-brand-medium/25 border-b-4 border-r-2 border-b-brand-medium/40 border-r-brand-medium/20 rounded-2xl overflow-hidden shadow-md focus-within:ring-4 focus-within:ring-brand-accent/20 transition-all">
-              <input
-                type="text"
-                placeholder="Search by City, University or Property..."
-                disabled
-                className="w-full px-6 py-4 text-sm font-semibold text-brand-dark placeholder-brand-medium/50 bg-white focus:outline-none cursor-pointer"
-                onClick={() => navigate('/login')}
-              />
-              <button
-                type="submit"
-                className="bg-brand-medium hover:bg-brand-accent text-white px-8 font-black uppercase text-xs tracking-wider transition-all duration-150 cursor-pointer border-l border-brand-medium/10 flex items-center justify-center gap-1.5"
-              >
-                <FaSearch /> Search
-              </button>
-            </form>
           </div>
         </section>
 
@@ -313,92 +280,98 @@ export default function Home() {
   return (
     <div className="space-y-12">
       
-      {/* 3D Hero Banner (Warm sand and coffee tones with Cozy Room Image) */}
-      <section className="relative bg-gradient-to-br from-brand-light via-white to-brand-light rounded-3xl p-8 md:p-12 border border-brand-medium/20 border-b-8 border-r-4 border-b-brand-medium/50 border-r-brand-medium/30 shadow-[0_15px_30px_rgba(144,105,86,0.06)] text-brand-dark flex flex-col md:flex-row justify-between items-center gap-8">
+      {/* 3D Glassmorphic Hero Search Banner */}
+      <section className="relative h-[480px] rounded-3xl overflow-hidden shadow-2xl border border-brand-medium/10">
         
-        {/* Left Column: Text Info */}
-        <div className="relative z-10 flex-1 space-y-6">
-          <span className="bg-brand-accent/20 text-brand-dark border border-brand-accent/30 px-3.5 py-1 rounded-full text-xs font-black tracking-widest uppercase shadow-sm inline-block">
-            🏠 Find Your Nest
-          </span>
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight text-brand-dark">
-            Premium Student Accommodations Made Simple
-          </h1>
-          <p className="text-brand-medium text-base md:text-lg font-semibold leading-relaxed">
-            Explore verified listings near your college with high-speed WiFi, gym access, and student-focused community living.
-          </p>
-        </div>
-
-        {/* Right Column: 3D-framed Cozy Room Image */}
-        <div className="hidden md:block w-full max-w-sm rounded-2xl overflow-hidden border border-brand-medium/25 border-b-4 border-r border-b-brand-medium/40 border-r-brand-medium/20 shadow-md">
+        {/* Background Image with Dark Overlay */}
+        <div className="absolute inset-0 z-0">
           <img
-            src="https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=500&q=80"
+            src="https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=1600&q=80"
             alt="Cozy StayNest Room"
-            className="w-full h-56 object-cover"
+            className="w-full h-full object-cover filter brightness-[0.7]"
           />
+          {/* Bottom gradient shadows */}
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/70 via-transparent to-brand-dark/45" />
         </div>
 
-      </section>
-
-      {/* 3D Search Panel */}
-      <section className="bg-white border border-brand-medium/20 border-b-6 border-r-4 border-b-brand-medium/40 border-r-brand-medium/20 rounded-2xl p-6 shadow-md">
-        <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        {/* Hero Content Area */}
+        <div className="relative z-10 h-full max-w-4xl mx-auto flex flex-col justify-between p-8 md:p-12 text-white">
           
-          <div className="space-y-1.5">
-            <label className="text-xs font-black uppercase tracking-wider text-brand-medium/60 flex items-center gap-1.5">
-              <FaSearch /> Search Keyword
-            </label>
-            <input
-              type="text"
-              placeholder="College, area..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-brand-light/20 border border-brand-medium/20 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-brand-accent/20 shadow-inner"
-            />
+          {/* Top text block */}
+          <div className="space-y-4 max-w-xl">
+            <span className="bg-brand-accent/30 backdrop-blur-md text-brand-light border border-white/25 px-3.5 py-1 rounded-full text-xs font-black tracking-widest uppercase shadow-sm inline-block animate-fade-in">
+              🏠 Find Your Nest
+            </span>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+              Premium Student Accommodations Made Simple
+            </h1>
+            <p className="text-gray-200 text-sm md:text-base font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+              Explore verified listings near your college with high-speed WiFi, gym access, and student-focused community living.
+            </p>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-black uppercase tracking-wider text-brand-medium/60 flex items-center gap-1.5">
-              <FaMapMarkerAlt /> City
-            </label>
-            <select
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              className="w-full bg-brand-light/20 border border-brand-medium/20 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-brand-accent/20 shadow-inner cursor-pointer"
-            >
-              <option value="">All Cities</option>
-              <option value="Mumbai">Mumbai</option>
-              <option value="Delhi">Delhi</option>
-              <option value="Bangalore">Bangalore</option>
-              <option value="Pune">Pune</option>
-              <option value="Hyderabad">Hyderabad</option>
-              <option value="Chennai">Chennai</option>
-            </select>
+          {/* Floating Glassmorphic Search Form Overlay */}
+          <div className="w-full bg-white/20 backdrop-blur-xl border border-white/30 rounded-2xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-slide-up">
+            <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+              
+              <div className="space-y-1.5">
+                <label className="text-xs font-black uppercase tracking-wider text-gray-200 flex items-center gap-1.5 drop-shadow">
+                  <FaSearch /> Search Keyword
+                </label>
+                <input
+                  type="text"
+                  placeholder="College, area..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-brand-accent/40 shadow-inner"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-black uppercase tracking-wider text-gray-200 flex items-center gap-1.5 drop-shadow">
+                  <FaMapMarkerAlt /> City
+                </label>
+                <select
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-4 focus:ring-brand-accent/40 shadow-inner cursor-pointer"
+                >
+                  <option value="" className="text-brand-dark">All Cities</option>
+                  <option value="Mumbai" className="text-brand-dark">Mumbai</option>
+                  <option value="Delhi" className="text-brand-dark">Delhi</option>
+                  <option value="Bangalore" className="text-brand-dark">Bangalore</option>
+                  <option value="Pune" className="text-brand-dark">Pune</option>
+                  <option value="Hyderabad" className="text-brand-dark">Hyderabad</option>
+                  <option value="Chennai" className="text-brand-dark">Chennai</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-black uppercase tracking-wider text-gray-200 flex items-center gap-1.5 drop-shadow">
+                  <FaBed /> Room Type
+                </label>
+                <select
+                  value={roomType}
+                  onChange={(e) => setRoomType(e.target.value)}
+                  className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-4 focus:ring-brand-accent/40 shadow-inner cursor-pointer"
+                >
+                  <option value="" className="text-brand-dark">All Room Types</option>
+                  <option value="Single Room" className="text-brand-dark">Single Room</option>
+                  <option value="Double Room" className="text-brand-dark">Double Room</option>
+                  <option value="Triple Sharing" className="text-brand-dark">Triple Sharing</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                className="bg-brand-medium hover:bg-brand-accent text-white font-black uppercase text-xs tracking-wider py-3.5 rounded-xl shadow-md border-b-4 border-r border-brand-dark active:border-b-0 active:border-r-0 active:translate-y-1 active:translate-x-0.5 transition-all duration-150 cursor-pointer flex justify-center items-center gap-2"
+              >
+                <FaSlidersH /> Apply Filters
+              </button>
+            </form>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-black uppercase tracking-wider text-brand-medium/60 flex items-center gap-1.5">
-              <FaBed /> Room Type
-            </label>
-            <select
-              value={roomType}
-              onChange={(e) => setRoomType(e.target.value)}
-              className="w-full bg-brand-light/20 border border-brand-medium/20 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-brand-accent/20 shadow-inner cursor-pointer"
-            >
-              <option value="">All Room Types</option>
-              <option value="Single Room">Single Room</option>
-              <option value="Double Room">Double Room</option>
-              <option value="Triple Sharing">Triple Sharing</option>
-            </select>
-          </div>
-
-          <button
-            type="submit"
-            className="bg-brand-medium hover:bg-brand-accent text-white font-black uppercase text-xs tracking-wider py-3.5 rounded-xl shadow-md border-b-4 border-r border-brand-dark active:border-b-0 active:border-r-0 active:translate-y-1 active:translate-x-0.5 transition-all duration-150 cursor-pointer flex justify-center items-center gap-2"
-          >
-            <FaSlidersH /> Apply Filters
-          </button>
-        </form>
+        </div>
       </section>
 
       {/* Catalog */}

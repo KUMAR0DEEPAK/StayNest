@@ -52,11 +52,17 @@ export const createProperty = async (req, res) => {
             amenity: { connect: { id: Number(id) } }
           }))
         },
-        // Link multiple images
+        // Link multiple images (safely handle array or comma-separated string)
         images: {
-          create: imageUrls
+          create: Array.isArray(imageUrls)
             ? imageUrls.map((url) => ({ image_url: url }))
-            : []
+            : typeof imageUrls === 'string'
+              ? imageUrls
+                  .split(',')
+                  .map((url) => url.trim().replace(/^["']|["']$/g, ''))
+                  .filter((url) => url.length > 0)
+                  .map((url) => ({ image_url: url }))
+              : []
         }
       },
       include: {

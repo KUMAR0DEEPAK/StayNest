@@ -85,7 +85,7 @@ export default function Favorites() {
                   
                   {/* Rent Tag */}
                   <span className="absolute bottom-4 left-4 bg-brand-dark/95 text-white text-sm font-black px-3 py-1 rounded-lg shadow-md flex items-center border border-brand-medium/20">
-                    <span className="text-brand-accent text-xs font-bold mr-0.5">$</span>
+                    <span className="text-brand-accent text-xs font-bold mr-0.5">₹</span>
                     <span>{property.rent}</span>
                     <span className="text-[10px] text-gray-400 font-normal">/mo</span>
                   </span>

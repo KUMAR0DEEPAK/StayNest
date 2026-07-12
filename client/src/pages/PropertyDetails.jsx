@@ -2,7 +2,30 @@ import { useEffect, useState, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
 import api from '../services/api.js';
-import { FaMapMarkerAlt, FaBed, FaDollarSign, FaUser, FaPhone, FaEnvelope, FaCalendarAlt, FaStar, FaHeart } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaBed, FaRupeeSign, FaUser, FaPhone, FaEnvelope, FaCalendarAlt, FaStar, FaHeart } from 'react-icons/fa';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix Leaflet default marker icon resolution in React/Vite bundle
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+});
+
+const getCityCoordinates = (cityName) => {
+  const coords = {
+    mumbai: [19.0760, 72.8777],
+    delhi: [28.7041, 77.1025],
+    bangalore: [12.9716, 77.5946],
+    pune: [18.5204, 73.8567],
+    hyderabad: [17.3850, 78.4867],
+    chennai: [13.0827, 80.2707]
+  };
+  return coords[cityName?.toLowerCase()] || [20.5937, 78.9629];
+};
 
 export default function PropertyDetails() {
   const { id } = useParams();
@@ -238,6 +261,63 @@ export default function PropertyDetails() {
           </div>
         </div>
 
+        {/* Location Map Section */}
+        {property && (
+          <div className="bg-white border border-brand-medium/20 border-b-6 border-r-2 border-b-brand-medium/40 border-r-brand-medium/25 rounded-3xl p-6 shadow-sm space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-black text-brand-dark">Property Location</h2>
+              <a
+                href={property.latitude && property.longitude
+                  ? `https://www.google.com/maps/search/?api=1&query=${property.latitude},${property.longitude}`
+                  : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.city)}+India`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-black uppercase text-brand-medium hover:text-brand-accent transition-colors flex items-center gap-1"
+              >
+                🗺️ Open in Google Maps
+              </a>
+            </div>
+            
+            <div className="relative rounded-2xl overflow-hidden border border-brand-medium/10 h-72 w-full shadow-inner bg-brand-light/20 z-0">
+              <MapContainer
+                center={property.latitude && property.longitude
+                  ? [property.latitude, property.longitude]
+                  : getCityCoordinates(property.city)
+                }
+                zoom={14}
+                scrollWheelZoom={false}
+                style={{ height: '100%', width: '100%' }}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <Marker position={property.latitude && property.longitude
+                  ? [property.latitude, property.longitude]
+                  : getCityCoordinates(property.city)
+                }>
+                  <Popup>
+                    <div className="text-xs font-bold text-brand-dark">
+                      {property.title}
+                      {(!property.latitude || !property.longitude) && (
+                        <div className="text-[10px] text-gray-500 font-normal mt-1">Approximate city center location</div>
+                      )}
+                    </div>
+                  </Popup>
+                </Marker>
+              </MapContainer>
+            </div>
+            
+            <p className="text-xs font-semibold text-brand-medium flex items-center gap-1">
+              📍 {property.latitude && property.longitude
+                ? `Coordinates: ${property.latitude.toFixed(6)}, ${property.longitude.toFixed(6)}`
+                : `Location: ${property.city}, India (Approximate Center)`
+              }
+            </p>
+          </div>
+        )}
+
         {/* Reviews Section */}
         <div className="bg-white border border-brand-medium/20 border-b-6 border-r-2 border-b-brand-medium/40 border-r-brand-medium/25 rounded-3xl p-6 shadow-sm space-y-6">
           <h2 className="text-xl font-black text-brand-dark">Reviews & Ratings</h2>
@@ -313,14 +393,14 @@ export default function PropertyDetails() {
           <div className="flex justify-between items-center border-b border-brand-light pb-4">
             <span className="text-sm font-bold text-brand-medium">Monthly Rent</span>
             <span className="text-2xl font-black text-brand-dark flex items-center">
-              <FaDollarSign className="text-brand-accent text-lg" /> {property.rent}
+              <FaRupeeSign className="text-brand-accent text-lg" /> {property.rent}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-xs font-bold text-brand-medium">
             <div className="bg-brand-light/35 border border-brand-medium/10 p-3 rounded-2xl text-center">
               <div>Deposit Required</div>
-              <div className="text-brand-dark text-lg font-black mt-1">${property.deposit}</div>
+              <div className="text-brand-dark text-lg font-black mt-1">₹{property.deposit}</div>
             </div>
             <div className="bg-brand-light/35 border border-brand-medium/10 p-3 rounded-2xl text-center">
               <div>Rooms Available</div>
@@ -382,6 +462,9 @@ export default function PropertyDetails() {
             <div>
               <div className="font-bold text-brand-dark text-sm">{property.owner?.full_name}</div>
               <div className="text-xs text-brand-medium">{property.owner?.email}</div>
+              {property.owner?.phone && (
+                <div className="text-xs text-brand-medium mt-0.5">{property.owner?.phone}</div>
+              )}
             </div>
           </div>
         </div>
