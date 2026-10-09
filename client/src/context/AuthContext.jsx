@@ -20,10 +20,13 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await api.post('/auth/login', { email, password });
-      const { user: userData } = response.data;
+      const { user: userData, token } = response.data;
 
-      // Save user profile state to localStorage
+      // Save user profile state & token fallback to localStorage
       localStorage.setItem('user', JSON.stringify(userData));
+      if (token) {
+        localStorage.setItem('token', token);
+      }
 
       setUser(userData);
       return { success: true };
@@ -45,10 +48,13 @@ export const AuthProvider = ({ children }) => {
         phone,
         role
       });
-      const { user: userData } = response.data;
+      const { user: userData, token } = response.data;
 
-      // Save user profile state to localStorage
+      // Save user profile state & token fallback to localStorage
       localStorage.setItem('user', JSON.stringify(userData));
+      if (token) {
+        localStorage.setItem('token', token);
+      }
 
       setUser(userData);
       return { success: true };

@@ -13,10 +13,11 @@ const generateToken = (id) => {
 
 // Helper function to set JWT HTTP-Only Cookie
 const setAuthCookie = (res, token) => {
+    const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('token', token, {
         httpOnly: true, // Prevents XSS script access
-        secure: process.env.NODE_ENV === 'production', // Forces HTTPS in production
-        sameSite: 'lax', // Protects against CSRF
+        secure: isProduction, // Forces HTTPS in production
+        sameSite: isProduction ? 'none' : 'lax', // 'none' required for cross-domain cookies in production
         maxAge: 24 * 60 * 60 * 1000 // Cookie expires in 24 hours
     });
 };
@@ -53,6 +54,7 @@ export const register = async (req, res) => {
         res.status(201).json({
             status: 'success',
             message: 'User registered successfully',
+            token,
             user: {
                 id: user.id,
                 full_name: user.full_name,
@@ -85,6 +87,7 @@ export const login = async (req, res) => {
         res.status(200).json({
             status: 'success',
             message: 'User logged in successfully',
+            token,
             user: {
                 id: user.id,
                 full_name: user.full_name,
@@ -100,10 +103,11 @@ export const login = async (req, res) => {
 
 // User logout (clears cookie)
 export const logout = async (req, res) => {
+    const isProduction = process.env.NODE_ENV === 'production';
     res.clearCookie('token', {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax'
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax'
     });
     res.status(200).json({
         status: 'success',

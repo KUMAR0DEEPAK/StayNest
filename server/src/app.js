@@ -11,14 +11,28 @@ import favoriteRoutes from './routes/favoriteRoutes.js';
 
 const app = express();
 
+// Trust reverse proxy in production (Render, Railway, Heroku) for HTTPS cookies
+app.set('trust proxy', 1);
+
 // Middlewares
-// 2. Enable credentials (cookies) in CORS from local frontend origin
+// Enable credentials (cookies) in CORS from allowed frontend origin
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL.replace(/\/+$/, '')] : [])
+];
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes(origin.replace(/\/+$/, ''))) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS origin not allowed: ${origin}`));
+  },
   credentials: true
 }));
 app.use(express.json());
-app.use(cookieParser()); // 3. Register cookie-parser middleware
+app.use(cookieParser()); // Register cookie-parser middleware
 
 // API Routes
 app.use('/api/auth', authRoutes);
