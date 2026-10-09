@@ -1,5 +1,6 @@
 # 🏡 StayNest
 
+🔗 Live Link: https://examai-g2el.onrender.com
 StayNest is a premium, full-stack student accommodation portal built using the MERN/PERN stack. It enables students to find, bookmark, review, and book properties, while allowing property owners to list, manage, and track bookings dynamically.
 
 ---
