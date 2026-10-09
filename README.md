@@ -1,6 +1,6 @@
 # 🏡 StayNest
 
-🔗 Live Link: stay-nest-alpha-five.vercel.app
+🔗 Live Link: [stay-nest-alpha-five.vercel.app](https://stay-nest-alpha-five.vercel.app/)
 
 StayNest is a premium, full-stack student accommodation portal built using the MERN/PERN stack. It enables students to find, bookmark, review, and book properties, while allowing property owners to list, manage, and track bookings dynamically.
 
